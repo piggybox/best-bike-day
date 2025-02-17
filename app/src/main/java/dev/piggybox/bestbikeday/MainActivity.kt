@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -40,7 +40,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     
     LaunchedEffect(Unit) {
         viewModel.fetchWeatherForecast(
-            lat = 47.6062, // Example: Seattle coordinates
+            lat = 47.6062,
             lon = -122.3321
         )
     }
@@ -58,9 +58,9 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
             )
             
             forecast?.let { weatherForecast ->
-                LazyRow(
+                LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 16.dp)
+                    contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
                     items(weatherForecast.daily) { day ->
                         DayForecastCard(day)
@@ -75,25 +75,30 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
 fun DayForecastCard(forecast: DayForecast) {
     Card(
         modifier = Modifier
-            .padding(8.dp)
-            .width(120.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth()  // Make cards full width
     ) {
-        Column(
-            modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = formatDate(forecast.dt),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyLarge
             )
-            Text(
-                text = "${forecast.temp.day}°C",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Text(
-                text = forecast.weather.firstOrNull()?.main ?: "",
-                style = MaterialTheme.typography.bodySmall
-            )
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = "${forecast.temp.day}°C",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Text(
+                    text = forecast.weather.firstOrNull()?.main ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }
