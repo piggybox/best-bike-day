@@ -17,6 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import dev.piggybox.bestbikeday.data.DayForecast
 import dev.piggybox.bestbikeday.ui.theme.BestBikeDayTheme
 import dev.piggybox.bestbikeday.viewmodel.WeatherViewModel
@@ -91,13 +100,13 @@ fun DayForecastCard(forecast: DayForecast, bikeScore: BikeScore) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = formatDate(forecast.dt),
-                style = MaterialTheme.typography.bodyLarge
-            )
             Column(
-                horizontalAlignment = Alignment.End
+                modifier = Modifier.weight(1f)
             ) {
+                Text(
+                    text = formatDate(forecast.dt),
+                    style = MaterialTheme.typography.bodyLarge
+                )
                 Text(
                     text = "${forecast.temp.day}°C",
                     style = MaterialTheme.typography.headlineSmall
@@ -106,9 +115,43 @@ fun DayForecastCard(forecast: DayForecast, bikeScore: BikeScore) {
                     text = forecast.weather.firstOrNull()?.main ?: "",
                     style = MaterialTheme.typography.bodySmall
                 )
+            }
+            
+            Box(
+                modifier = Modifier.size(60.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(modifier = Modifier.size(60.dp)) {
+                    val strokeWidth = 4.dp.toPx()
+                    val center = size.width / 2
+                    val radius = (size.width - strokeWidth) / 2
+                    
+                    // Background circle
+                    drawCircle(
+                        color = Color.LightGray.copy(alpha = 0.2f),
+                        radius = radius,
+                        style = Stroke(width = strokeWidth)
+                    )
+                    
+                    // Progress arc
+                    val sweepAngle = (bikeScore.score.toFloat() / 100f) * 360f
+                    drawArc(
+                        color = when (bikeScore.condition) {
+                            BikeCondition.EXCELLENT -> Color.Green
+                            BikeCondition.GOOD -> Color(0xFF8BC34A)
+                            BikeCondition.FAIR -> Color(0xFFFFC107)
+                            BikeCondition.POOR -> Color(0xFFF44336)
+                        },
+                        startAngle = -90f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+                }
                 Text(
-                    text = "Bike Score: ${bikeScore.score.toInt()}%",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "${bikeScore.score.toInt()}%",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
                     color = when (bikeScore.condition) {
                         BikeCondition.EXCELLENT -> Color.Green
                         BikeCondition.GOOD -> Color(0xFF8BC34A)
