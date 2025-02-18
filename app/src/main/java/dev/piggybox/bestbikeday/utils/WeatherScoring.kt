@@ -19,22 +19,23 @@ object WeatherScoring {
         temperature: Double,
         rainChance: Double,
         windSpeed: Double
-    ): BikeCondition {
+    ): BikeScore {
         val tempScore = calculateTemperatureScore(temperature)
         val rainScore = calculateRainScore(rainChance)
         val windScore = calculateWindScore(windSpeed)
-
+    
         // Weighted average (temperature is most important, followed by rain, then wind)
         val totalScore = (tempScore * 0.4 + rainScore * 0.4 + windScore * 0.2)
-
-        return when {
+    
+        val condition = when {
             totalScore >= 80 -> BikeCondition.EXCELLENT
             totalScore >= 60 -> BikeCondition.GOOD
             totalScore >= 40 -> BikeCondition.FAIR
             else -> BikeCondition.POOR
         }
+    
+        return BikeScore(condition, totalScore)
     }
-
     private fun calculateTemperatureScore(temp: Double): Double = when {
         temp in IDEAL_TEMP_MIN..IDEAL_TEMP_MAX -> 100.0
         temp < MIN_ACCEPTABLE_TEMP || temp > MAX_ACCEPTABLE_TEMP -> 0.0

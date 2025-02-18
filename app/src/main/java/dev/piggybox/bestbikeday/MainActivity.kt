@@ -16,11 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.graphics.Color
 import dev.piggybox.bestbikeday.data.DayForecast
 import dev.piggybox.bestbikeday.ui.theme.BestBikeDayTheme
 import dev.piggybox.bestbikeday.viewmodel.WeatherViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import dev.piggybox.bestbikeday.utils.BikeScore
+// Add this import at the top with other imports
+import dev.piggybox.bestbikeday.utils.BikeCondition
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +41,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     val forecast by viewModel.weatherForecast.collectAsState()
+    val bikeScores by viewModel.bikeScores.collectAsState()
     
     LaunchedEffect(Unit) {
         viewModel.fetchWeatherForecast(
@@ -57,13 +62,16 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
                 modifier = Modifier.padding(16.dp)
             )
             
-            forecast?.let { weatherForecast ->
+            if (forecast != null && bikeScores.size > 0) {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
-                    items(weatherForecast.daily) { day ->
-                        DayForecastCard(day)
+                    items(forecast!!.daily.indices.toList()) { index ->
+                        DayForecastCard(
+                            forecast = forecast!!.daily[index],
+                            bikeScore = bikeScores[index]
+                        )
                     }
                 }
             }
@@ -72,11 +80,11 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
 }
 
 @Composable
-fun DayForecastCard(forecast: DayForecast) {
+fun DayForecastCard(forecast: DayForecast, bikeScore: BikeScore) {
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()  // Make cards full width
+            .fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -97,6 +105,16 @@ fun DayForecastCard(forecast: DayForecast) {
                 Text(
                     text = forecast.weather.firstOrNull()?.main ?: "",
                     style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "Bike Score: ${bikeScore.score.toInt()}%",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = when (bikeScore.condition) {
+                        BikeCondition.EXCELLENT -> Color.Green
+                        BikeCondition.GOOD -> Color(0xFF8BC34A)
+                        BikeCondition.FAIR -> Color(0xFFFFC107)
+                        BikeCondition.POOR -> Color(0xFFF44336)
+                    }
                 )
             }
         }
